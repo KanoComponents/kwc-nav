@@ -81,7 +81,7 @@
                         let navItemsElements = Polymer.dom(element.root)
                                 .querySelectorAll('kwc-nav-item');
                         /** Check length */
-                        assert.equal(navItems.length, items.length);
+                        assert.lengthOf(navItems, items);
                         /** Check order */
                         assert.equal(navItemsElements[0].id, items[0].id);
                         assert.equal(navItemsElements[1].id, items[1].id);
