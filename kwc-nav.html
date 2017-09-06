@@ -1,0 +1,232 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../kwc-nav-item/kwc-nav-item.html">
+
+<!--
+`kwc-nav`
+Display navigation links within the view header, to select sub-views.
+
+@demo demo/index.html
+-->
+
+<dom-module id="kwc-nav">
+    <template>
+        <style>
+            :host {
+                display: block;
+            }
+            :host .nav-items {
+                @apply --layout-horizontal;
+                @apply --layout-justify-center;
+                font-size: 20px;
+                list-style: none;
+                list-style: none;
+                margin: 4px 0 0 0;
+                padding: 0;
+                position: relative;
+            }
+            :host .caret-container {
+                width: 100%;
+            }
+            :host #caret {
+                display: none;
+                position: relative;
+            }
+            :host #caret::after {
+                background-color: #ffffff;
+                border-radius: 3px 0 0 0;
+                content: "";
+                display: block;
+                height: 12px;
+                left: 0;
+                position: absolute;
+                top: -6px;
+                transform: rotate(45deg);
+                width: 12px;
+            }
+        </style>
+        <nav class="navigation">
+            <ul class="nav-items">
+                <template id="items" is="dom-repeat" items="[[navItems]]" on-dom-change="_moveCaret">
+                    <li>
+                        <kwc-nav-item id="[[item.id]]"
+                                      label="[[item.label]]"
+                                      icon-id="[[item.iconId]]"
+                                      active="[[_isActive(item, activeItemId)]]"
+                                      on-tap="_onTap">
+                                      </kwc-nav-item>
+                    </li>
+                </template>
+            </ul>
+            <template is="dom-if" if="[[hasCaret]]">
+                <div class="caret-container">
+                    <div id="caret"></div>
+                </div>
+            </template>
+        </nav>
+    </template>
+
+    <script>
+        Polymer({
+            is: 'kwc-nav',
+            properties: {
+                /** Flags if navigation should display a caret */
+                hasCaret: {
+                    type: Boolean,
+                    value: false,
+                },
+                /**
+                 * Array of objects representing navigation items. This object
+                 * should follow the format:
+                 * {
+                 *     id: { type: String, required: true },
+                 *     label: { type: String, required: true },
+                 *     iconId: { type: String }
+                 * }
+                 */
+                navItems: {
+                    type: Array,
+                    value: null
+                },
+                /**
+                 * Keeps track of the currently active navigation item on
+                 * `navItems`
+                 */
+                activeItemId: {
+                    type: String,
+                    value: null
+                },
+                /**
+                 * Keeps track of the caret's current position
+                 */
+                _caretPosition: {
+                    type: Number
+                },
+                /**
+                 * How much the caret should "drift" before reaches the target
+                 */
+                _overRun: {
+                    type: Number,
+                    value: 12
+                }
+            },
+            observers: [
+                 '_moveCaret(activeItemId)'
+            ],
+            /**
+             * Checks if the given navigation item is the one currently active.
+             * @param {Object} navItem Navigation item.
+             * @param {String} activeItemId Id of the currently active navigation
+             *     item.
+             * @return {Boolean} Flag if item is active or not.
+             */
+            _isActive (navItem, activeItemId) {
+                if (!navItem || !activeItemId) {
+                    return false;
+                }
+                return navItem.id === activeItemId;
+            },
+            /**
+             * Fired when a navigation item is clicked.
+             * @event navigated
+             * @param {String} activeItem Item id related to the clicked
+             *     navigation item.
+             */
+            /**
+             * Hangles tap events on navigation items.
+             * @param {Event} e Polymer `tap` event.
+             */
+            _onTap (e) {
+                if (e.model && e.model.item) {
+                    let activeItem = e.model.item.id;
+                    this.set('activeItemId', activeItem);
+                    this.fire('navigated', activeItem);
+                }
+            },
+            /**
+             * Calculates the next position the caret should be basen on the
+             * current `activeItemId`.
+             * @param {HTMLElement} targetElement Dom element representing the target item
+             *     on the navigation items.
+             * @return {Number} Absolute horizontal position, base on its
+             *     parent, representing the center of the `targetElement`
+             */
+            _calculateTargetOffset (targetElement) {
+                if (!targetElement) {
+                    return 0;
+                }
+                return targetElement.offsetLeft + (targetElement.offsetWidth/2);
+            },
+            /**
+             * Gets the element from navigation items given the item id.
+             * @param {String} itemId Item id.
+             * @return {HTMLElement}
+             */
+            _getTargetElement (itemId) {
+                return this.$$(`#${itemId}`);
+            },
+            /**
+             * Animates caret from one position to another.
+             * @param {HTMLElemeng} caret Caret element.
+             * @param {Number} currentPosition Current caret's position.
+             * @param {Number} targetPosition Position the caret should end the
+             *     animation at.
+             * @return {Object} Animation object.
+             */
+            _animateCaret (caret, currentPosition, targetPosition) {
+                let overRun = targetPosition > currentPosition ? this._overRun : -this._overRun;
+                return caret.animate([
+                        { offset: 0, transform: `translateX(${currentPosition}px)` },
+                        { offset: 0.8, transform: `translateX(${targetPosition+overRun}px)` },
+                        { offset: 1, transform: `translateX(${targetPosition}px)` },
+                    ],
+                    {
+                        duration: 250,
+                        easing: 'cubic-bezier(0.390, 0.575, 0.565, 1.000)',
+                        fill: 'forwards',
+                        iterations: 1
+                    }
+                );
+            },
+            /**
+             * Moves caret to the new target position. Triggered when the
+             * `dom-repeater` changes it's `dom` and when `activeItemId` is
+             * changed.
+             * @return {Boolean} Flags if caret was moved or not.
+             */
+            _moveCaret () {
+                return new Promise((resolve, reject) => {
+                    /** Skip this entirely if caret is disabled */
+                    if (!this.hasCaret) {
+                        return resolve(false);
+                    }
+                    this.debounce('move-caret', () => {
+                        let targetElement = this._getTargetElement(this.activeItemId),
+                            targetOffset = this._calculateTargetOffset(targetElement),
+                            currentOffset = this._caretPosition || 0;
+
+                        if (currentOffset === targetOffset) {
+                            return resolve(false);
+                        }
+
+                        let caret = this.$$('#caret'),
+                            animation = this._animateCaret(
+                                caret, currentOffset, targetOffset
+                            );
+                        animation.onfinish = () => {
+                            this.set('_caretPosition', targetOffset)
+                            /**
+                            * The caret starts hidden by default so after animating
+                            * it to the initial position, it has to be displayed
+                            */
+                            if (!caret.style.display) {
+                                caret.style.display = 'block';
+                            }
+                            resolve(true);
+                        };
+                    }, 10);
+                });
+            }
+        });
+    </script>
+</dom-module>
