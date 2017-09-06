@@ -12,8 +12,9 @@
     <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
     <link rel="import" href="../kwc-nav.html">
 
-    <style is="custom-style" include="demo-pages-shared-styles">
-    </style>
+    <custom-style>
+        <style is="custom-style" include="demo-pages-shared-styles"></style>
+    </custom-style>
 </head>
 <body>
     <div class="vertical-section-container centered">
@@ -25,20 +26,20 @@
                              has-caret>
                              </kwc-nav>
                 </div>
+                <script type="text/javascript">
+                document.addEventListener('WebComponentsReady', function() {
+                    var nav = document.getElementById('kwc-nav');
+                    var navItems = [
+                        { id:"item-1", label: "Item 1", iconId: "challenges" },
+                        { id:"item-2", label: "Item 2", iconId: "medals" },
+                        { id:"item-3", label: "Item 3" }
+                    ];
+                    nav.set('navItems', navItems);
+                    nav.set('activeItemId', navItems[1].id);
+                });
+                </script>
             </template>
         </demo-snippet>
-        <script type="text/javascript">
-            document.addEventListener('WebComponentsReady', function() {
-                var nav = document.getElementById('kwc-nav');
-                var navItems = [
-                    { id:"item-1", label: "Item 1", iconId: "challenges" },
-                    { id:"item-2", label: "Item 2", iconId: "medals" },
-                    { id:"item-3", label: "Item 3" }
-                ];
-                nav.set('navItems', navItems);
-                nav.set('activeItemId', navItems[1].id);
-            });
-        </script>
     </div>
 </body>
 </html>
