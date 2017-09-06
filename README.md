@@ -2,6 +2,11 @@
 
 Display navigation links within the view header, to select sub-views.
 
+## Installation
+
+Clone this repository.
+Run `bower i`
+
 ## Install the Polymer-CLI
 
 First, make sure you have the [Polymer CLI](https://www.npmjs.com/package/polymer-cli) installed. Then run `polymer serve` to serve your element locally.
