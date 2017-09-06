@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+        <title>kwc-nav test</title>
+
+        <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+        <script src="../../web-component-tester/browser.js"></script>
+
+        <link rel="import" href="../kwc-nav.html">
+    </head>
+    <body>
+        <test-fixture id="basic">
+            <template>
+                <kwc-nav nav-items="[[items]]"></kwc-nav>
+            </template>
+        </test-fixture>
+        <test-fixture id="empty">
+            <template>
+                <kwc-nav></kwc-nav>
+            </template>
+        </test-fixture>
+        <test-fixture id="active-item">
+            <template>
+                    <kwc-nav nav-items="[[items]]"
+                             active-item-id="item-1">
+                </kwc-nav>
+            </template>
+        </test-fixture>
+        <test-fixture id="caret">
+            <template>
+                    <kwc-nav nav-items="[[items]]"
+                    active-item-id="item-2"
+                    has-caret>
+                </kwc-nav>
+            </template>
+        </test-fixture>
+        <script>
+            let items = [
+                    { id:"item-1", label: "Item 1", iconId: "challenges" },
+                    { id:"item-2", label: "Item 2", iconId: "medals" },
+                    { id:"item-3", label: "Item 3" }
+                ],
+                activeItemId1 = items[0].id,
+                activeItemId2 = items[1].id;
+
+            suite('basic', () => {
+                let element;
+                setup(() => {
+                    element = fixture('basic');
+                    element.set('navItems', items);
+                })
+                test('instantiating the element works', () => {
+                    assert.equal(element.is, 'kwc-nav');
+                });
+                test('no caret by default', () => {
+                    assert.equal(element.hasCaret, false);
+                });
+                test('no `#caret` on DOM when `hasCaret` is false', (done) => {
+                    flush(() => {
+                        let caret = Polymer.dom(element.root)
+                                .querySelector('#caret');
+                        assert.notExists(caret);
+                        done();
+                    });
+                });
+                test('no active item by default', () => {
+                    let isActive = element._isActive(
+                        element.navItems[0], activeItemId1
+                    );
+                    assert.equal(isActive, false);
+                    assert.equal(element.activeItemId, null);
+                });
+                test('navigation items set properly', () => {
+                    assert.equal(element.navItems, items);
+                });
+                test('navigation items set properly on DOM', (done) => {
+                    flush(() => {
+                        let navItemsElements = Polymer.dom(element.root)
+                                .querySelectorAll('kwc-nav-item');
+                        /** Check length */
+                        assert.equal(navItems.length, items.length);
+                        /** Check order */
+                        assert.equal(navItemsElements[0].id, items[0].id);
+                        assert.equal(navItemsElements[1].id, items[1].id);
+                        assert.equal(navItemsElements[2].id, items[2].id);
+                        done();
+                    });
+                });
+            });
+
+            suite('empty', () => {
+                let element;
+                setup(function() {
+                    element = fixture('empty');
+                });
+                test('no navigation items', () => {
+                    assert.equal(element.navItems, null);
+                });
+                test('no navigation items on DOM', (done) => {
+                    flush(() => {
+                        let navItemsElements = Polymer.dom(element.root)
+                                .querySelectorAll('kwc-nav-item');
+                        assert.equal(navItemsElements.length, 0);
+                        done();
+                    });
+                });
+            });
+
+            suite('active item', () => {
+                let element;
+                setup(() => {
+                    element = fixture('active-item');
+                    element.set('navItems', items);
+                    element.set('activeItemId', activeItemId1);
+                })
+                test('active item set properly', () => {
+                    let isActive = element._isActive(
+                        element.navItems[0], activeItemId1
+                    );
+                    assert.equal(isActive, true);
+                    assert.equal(element.activeItemId, activeItemId1);
+                });
+                test('changing active item programatically', () => {
+                    element.set('activeItemId', activeItemId2);
+                    assert.equal(element.activeItemId, activeItemId2);
+                    let isActive = element._isActive(
+                        element.navItems[1], activeItemId2
+                    );
+                    assert.equal(isActive, true);
+                });
+                test('tapping item changes active item', (done) => {
+                    flush(() => {
+                        let navItems = Polymer.dom(element.root)
+                                .querySelectorAll('kwc-nav-item');
+                        navItems[2].click();
+                        assert.equal(element.activeItemId, items[2].id);
+                        navItems[1].click();
+                        assert.equal(element.activeItemId, items[1].id);
+                        navItems[0].click();
+                        assert.equal(element.activeItemId, items[0].id);
+                        done();
+                    });
+                });
+            });
+
+            suite('caret', () => {
+                let element;
+                setup(() => {
+                    element = fixture('caret');
+                    element.set('navItems', items);
+                    element.set('activeItemId', activeItemId1);
+                })
+                test('has caret', () => {
+                    assert.equal(element.hasCaret, true);
+                });
+                test('has caret on DOM', (done) => {
+                    let caret = Polymer.dom(element.root).querySelector('#caret');
+                    assert.exists(caret);
+                    done();
+                });
+                /**
+                 * TODO: Find a way to test caret position on DOM to compare
+                 * with the calculated
+                 */
+            });
+        </script>
+    </body>
+</html>
