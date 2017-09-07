@@ -67,10 +67,10 @@
                     });
                 });
                 test('no active item by default', () => {
-                    let isActive = element._isActive(
-                        element.navItems[0], activeItemId1
-                    );
-                    assert.equal(isActive, false);
+                    let anyActive = element.navItems.some((el) => {
+                        return element._isActive(el, element.activeItemId);
+                    });
+                    assert.equal(anyActive, false);
                     assert.equal(element.activeItemId, null);
                 });
                 test('navigation items set properly', () => {
@@ -81,7 +81,7 @@
                         let navItemsElements = Polymer.dom(element.root)
                                 .querySelectorAll('kwc-nav-item');
                         /** Check length */
-                        assert.lengthOf(navItems, items);
+                        assert.equal(navItemsElements.length, items.length);
                         /** Check order */
                         assert.equal(navItemsElements[0].id, items[0].id);
                         assert.equal(navItemsElements[1].id, items[1].id);
@@ -157,9 +157,11 @@
                     assert.equal(element.hasCaret, true);
                 });
                 test('has caret on DOM', (done) => {
-                    let caret = Polymer.dom(element.root).querySelector('#caret');
-                    assert.exists(caret);
-                    done();
+                    flush(() => {
+                        let caret = Polymer.dom(element.root).querySelector('#caret');
+                        assert.exists(caret);
+                        done();
+                    });
                 });
                 /**
                  * TODO: Find a way to test caret position on DOM to compare
