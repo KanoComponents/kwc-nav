@@ -75,33 +75,49 @@ Display navigation links within the view header, to select sub-views.
                 Polymer.IronSelectableBehavior
             ],
             properties: {
-                /** Flags if navigation should display a caret */
+                /**
+                 * Flags if navigation should display a caret
+                 * @type {Boolean}
+                 */
                 hasCaret: {
                     type: Boolean,
                     value: false
                 },
-                /** Defines how to align navigation items accordingly */
+                /**
+                 * Defines how to align navigation items accordingly
+                 * @type {String}
+                 */
                 alignment: {
                     type: String,
                     value: 'start'
                 },
+                /**
+                 * Override `IronSelectableBehavior`'s property just to make it
+                 * clear the api for changing the `selectedClass` can be used
+                 * @type {String}
+                 */
                 selectedClass: {
                     type: String,
                     value: 'iron-selected'
                 },
-                /** Computed class to apply alignment on navigation items */
+                /**
+                 * Computed class to apply alignment on navigation items
+                 * @type {String}
+                 */
                 _alignmentClass: {
                     type: String,
                     computed: '_computeAlignmentClass(alignment)'
                 },
                 /**
                  * Keeps track of the caret's current position
+                 * @type {Number}
                  */
                 _caretPosition: {
                     type: Number
                 },
                 /**
                  * How much the caret should "drift" before reaches the target
+                 * @type {Number}
                  */
                 _overRun: {
                     type: Number,
@@ -127,8 +143,8 @@ Display navigation links within the view header, to select sub-views.
             },
             /**
              * Gets the element from navigation items given the item id.
-             * @param {String} itemId Item id.
-             * @return {HTMLElement}
+             * @param {String} selector CSS selector
+             * @return {HTMLElement} HTML Element that matches selector
              */
             _getTargetElement (selector) {
                 return Polymer.dom(this).querySelector(selector);
@@ -195,6 +211,12 @@ Display navigation links within the view header, to select sub-views.
                     }, 10);
                 });
             },
+            /**
+             * Computes the alignment class to be applied to the navigation
+             * based on `alignment` property
+             * @param {String} alignment What is the navigation alignment
+             * @return {String} Which class to append to navigation
+             */
             _computeAlignmentClass (alignment) {
                 let alignmentClass = 'justify-start';
                 switch (alignment) {

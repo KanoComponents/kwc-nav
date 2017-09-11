@@ -149,7 +149,8 @@
                 });
                 test('has caret on DOM', (done) => {
                     flush(() => {
-                        let caret = Polymer.dom(element.root).querySelector('#caret');
+                        let caret = Polymer.dom(element.root)
+                            .querySelector('#caret');
                         assert.exists(caret);
                         done();
                     });
