@@ -1,6 +1,5 @@
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
-<link rel="import" href="../kwc-nav-item/kwc-nav-item.html">
+<link rel="import" href="../iron-selector/iron-selector.html">
 
 <!--
 `kwc-nav`
@@ -15,9 +14,8 @@ Display navigation links within the view header, to select sub-views.
             :host {
                 display: block;
             }
-            :host .nav-items {
+            .nav-items {
                 @apply --layout-horizontal;
-                @apply --layout-justify-center;
                 font-size: 20px;
                 list-style: none;
                 list-style: none;
@@ -25,14 +23,14 @@ Display navigation links within the view header, to select sub-views.
                 padding: 0;
                 position: relative;
             }
-            :host .caret-container {
+            .caret-container {
                 width: 100%;
             }
-            :host #caret {
+            #caret {
                 display: none;
                 position: relative;
             }
-            :host #caret::after {
+            #caret::after {
                 background-color: #ffffff;
                 border-radius: 3px 0 0 0;
                 content: "";
@@ -44,57 +42,57 @@ Display navigation links within the view header, to select sub-views.
                 transform: rotate(45deg);
                 width: 12px;
             }
+            .nav-items.justify-start {
+                @apply --layout-start-justified;
+            }
+            .nav-items.justify-end {
+                @apply --layout-end-justified;
+            }
+            .nav-items.justify-center {
+                @apply --layout-center-center;
+            }
+            .nav-items.justify-space-between {
+                @apply --layout-justified;
+            }
+            .nav-items.justify-space-around {
+                @apply --layout-around-justified;
+            }
         </style>
-        <nav class="navigation">
-            <ul class="nav-items">
-                <template id="items" is="dom-repeat" items="[[navItems]]" on-dom-change="_moveCaret">
-                    <li>
-                        <kwc-nav-item id="[[item.id]]"
-                                      label="[[item.label]]"
-                                      icon-id="[[item.iconId]]"
-                                      active="[[_isActive(item, activeItemId)]]"
-                                      on-tap="_onTap">
-                                      </kwc-nav-item>
-                    </li>
-                </template>
-            </ul>
-            <template is="dom-if" if="[[hasCaret]]">
-                <div class="caret-container">
-                    <div id="caret"></div>
-                </div>
-            </template>
-        </nav>
+        <div class$="nav-items [[_alignmentClass]]">
+            <slot name="navigation"></slot>
+        </div>
+        <template is="dom-if" if="[[hasCaret]]">
+            <div class="caret-container">
+                <div id="caret"></div>
+            </div>
+        </template>
     </template>
 
     <script>
         Polymer({
             is: 'kwc-nav',
+            behaviors: [
+                Polymer.IronSelectableBehavior
+            ],
             properties: {
                 /** Flags if navigation should display a caret */
                 hasCaret: {
                     type: Boolean,
                     value: false
                 },
-                /**
-                 * Array of objects representing navigation items. This object
-                 * should follow the format:
-                 * {
-                 *     id: { type: String, required: true },
-                 *     label: { type: String, required: true },
-                 *     iconId: { type: String }
-                 * }
-                 */
-                navItems: {
-                    type: Array,
-                    value: null
-                },
-                /**
-                 * Keeps track of the currently active navigation item on
-                 * `navItems`
-                 */
-                activeItemId: {
+                /** Defines how to align navigation items accordingly */
+                alignment: {
                     type: String,
-                    value: null
+                    value: 'start'
+                },
+                selectedClass: {
+                    type: String,
+                    value: 'iron-selected'
+                },
+                /** Computed class to apply alignment on navigation items */
+                _alignmentClass: {
+                    type: String,
+                    computed: '_computeAlignmentClass(alignment)'
                 },
                 /**
                  * Keeps track of the caret's current position
@@ -111,38 +109,8 @@ Display navigation links within the view header, to select sub-views.
                 }
             },
             observers: [
-                 '_moveCaret(activeItemId)'
+                 '_moveCaret(selected)'
             ],
-            /**
-             * Checks if the given navigation item is the one currently active.
-             * @param {Object} navItem Navigation item.
-             * @param {String} activeItemId Id of the currently active navigation
-             *     item.
-             * @return {Boolean} Flag if item is active or not.
-             */
-            _isActive (navItem, activeItemId) {
-                if (!navItem || !activeItemId) {
-                    return false;
-                }
-                return navItem.id === activeItemId;
-            },
-            /**
-             * Fired when a navigation item is clicked.
-             * @event navigated
-             * @param {String} activeItem Item id related to the clicked
-             *     navigation item.
-             */
-            /**
-             * Handles tap events on navigation items.
-             * @param {Event} e Polymer `tap` event.
-             */
-            _onTap (e) {
-                if (e.model && e.model.item) {
-                    let activeItem = e.model.item.id;
-                    this.set('activeItemId', activeItem);
-                    this.fire('navigated', activeItem);
-                }
-            },
             /**
              * Calculates the next position the caret should be basen on the
              * current `activeItemId`.
@@ -162,8 +130,8 @@ Display navigation links within the view header, to select sub-views.
              * @param {String} itemId Item id.
              * @return {HTMLElement}
              */
-            _getTargetElement (itemId) {
-                return this.$$(`#${itemId}`);
+            _getTargetElement (selector) {
+                return Polymer.dom(this).querySelector(selector);
             },
             /**
              * Animates caret from one position to another.
@@ -201,7 +169,7 @@ Display navigation links within the view header, to select sub-views.
                         return resolve(false);
                     }
                     this.debounce('move-caret', () => {
-                        let targetElement = this._getTargetElement(this.activeItemId),
+                        let targetElement = this._getTargetElement(`.${this.selectedClass}`),
                             targetOffset = this._calculateTargetOffset(targetElement),
                             currentOffset = this._caretPosition || 0;
 
@@ -226,6 +194,31 @@ Display navigation links within the view header, to select sub-views.
                         };
                     }, 10);
                 });
+            },
+            _computeAlignmentClass (alignment) {
+                let alignmentClass = 'justify-start';
+                switch (alignment) {
+                    case 'start':
+                        alignmentClass = 'justify-start';
+                        break;
+                    case 'end':
+                        alignmentClass = 'justify-end';
+                        break;
+                    case 'center':
+                        alignmentClass = 'justify-center';
+                        break;
+                    case 'space-between':
+                        alignmentClass = 'justify-space-between';
+                        break;
+                    case 'space-around':
+                        alignmentClass = 'justify-space-around';
+                        break;
+                    case 'space-evenly':
+                        alignmentClass = 'justify-space-evenly';
+                        break;
+                    break;
+                }
+                return alignmentClass;
             }
         });
     </script>
