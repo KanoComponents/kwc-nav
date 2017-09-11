@@ -8,13 +8,20 @@
 
         <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
         <script src="../../web-component-tester/browser.js"></script>
-
+        <link rel="import" href="../../kwc-nav-item/kwc-nav-item.html">
         <link rel="import" href="../kwc-nav.html">
     </head>
     <body>
         <test-fixture id="basic">
             <template>
-                <kwc-nav nav-items="[[items]]"></kwc-nav>
+                <kwc-nav attr-for-selected="name">
+                    <kwc-nav-item slot="navigation" name="item-1">
+                        Item 1
+                    </kwc-nav-item>
+                    <kwc-nav-item slot="navigation" name="item-2">
+                        Item 2
+                    </kwc-nav-item>
+                </kwc-nav>
             </template>
         </test-fixture>
         <test-fixture id="empty">
@@ -24,33 +31,48 @@
         </test-fixture>
         <test-fixture id="active-item">
             <template>
-                    <kwc-nav nav-items="[[items]]"
-                             active-item-id="item-1">
-                    </kwc-nav>
+                <kwc-nav attr-for-selected="name">
+                    <kwc-nav-item slot="navigation" name="item-1">
+                        Item 1
+                    </kwc-nav-item>
+                    <kwc-nav-item slot="navigation" name="item-2">
+                        Item 2
+                    </kwc-nav-item>
+                </kwc-nav>
+            </template>
+        </test-fixture>
+        <test-fixture id="active-item-programatically">
+            <template>
+                <kwc-nav attr-for-selected="name">
+                    <kwc-nav-item slot="navigation" name="item-1">
+                        Item 1
+                    </kwc-nav-item>
+                    <kwc-nav-item slot="navigation" name="item-2">
+                        Item 2
+                    </kwc-nav-item>
+                </kwc-nav>
             </template>
         </test-fixture>
         <test-fixture id="caret">
             <template>
-                    <kwc-nav nav-items="[[items]]"
-                             active-item-id="item-2"
-                             has-caret>
-                    </kwc-nav>
+                <kwc-nav has-caret attr-for-selected="name">
+                    <kwc-nav-item slot="navigation" name="item-1">
+                        Item 1
+                    </kwc-nav-item>
+                    <kwc-nav-item slot="navigation" name="item-2">
+                        Item 2
+                    </kwc-nav-item>
+                </kwc-nav>
             </template>
         </test-fixture>
         <script>
-            let items = [
-                    { id:"item-1", label: "Item 1", iconId: "challenges" },
-                    { id:"item-2", label: "Item 2", iconId: "medals" },
-                    { id:"item-3", label: "Item 3" }
-                ],
-                activeItemId1 = items[0].id,
-                activeItemId2 = items[1].id;
+            let selectedItem1 = 'item-1',
+                selectedItem2 = 'item-2';
 
             suite('basic', () => {
                 let element;
                 setup(() => {
                     element = fixture('basic');
-                    element.set('navItems', items);
                 })
                 test('instantiating the element works', () => {
                     assert.equal(element.is, 'kwc-nav');
@@ -67,27 +89,7 @@
                     });
                 });
                 test('no active item by default', () => {
-                    let anyActive = element.navItems.some((el) => {
-                        return element._isActive(el, element.activeItemId);
-                    });
-                    assert.equal(anyActive, false);
-                    assert.equal(element.activeItemId, null);
-                });
-                test('navigation items set properly', () => {
-                    assert.equal(element.navItems, items);
-                });
-                test('navigation items set properly on DOM', (done) => {
-                    flush(() => {
-                        let navItemsElements = Polymer.dom(element.root)
-                                .querySelectorAll('kwc-nav-item');
-                        /** Check length */
-                        assert.equal(navItemsElements.length, items.length);
-                        /** Check order */
-                        assert.equal(navItemsElements[0].id, items[0].id);
-                        assert.equal(navItemsElements[1].id, items[1].id);
-                        assert.equal(navItemsElements[2].id, items[2].id);
-                        done();
-                    });
+                    assert.notExists(element.selected);
                 });
             });
 
@@ -96,53 +98,43 @@
                 setup(function() {
                     element = fixture('empty');
                 });
-                test('no navigation items', () => {
-                    assert.equal(element.navItems, null);
-                });
-                test('no navigation items on DOM', (done) => {
-                    flush(() => {
-                        let navItemsElements = Polymer.dom(element.root)
-                                .querySelectorAll('kwc-nav-item');
-                        assert.equal(navItemsElements.length, 0);
-                        done();
-                    });
-                });
             });
 
             suite('active item', () => {
                 let element;
                 setup(() => {
                     element = fixture('active-item');
-                    element.set('navItems', items);
-                    element.set('activeItemId', activeItemId1);
-                })
-                test('active item set properly', () => {
-                    let isActive = element._isActive(
-                        element.navItems[0], activeItemId1
-                    );
-                    assert.equal(isActive, true);
-                    assert.equal(element.activeItemId, activeItemId1);
+                    element.set('selected', selectedItem2);
                 });
-                test('changing active item programatically', () => {
-                    element.set('activeItemId', activeItemId2);
-                    assert.equal(element.activeItemId, activeItemId2);
-                    let isActive = element._isActive(
-                        element.navItems[1], activeItemId2
-                    );
-                    assert.equal(isActive, true);
+                test('active item set properly', () => {
+                    assert.equal(element.selected, selectedItem2);
                 });
                 test('tapping item changes active item', (done) => {
                     flush(() => {
                         let navItems = Polymer.dom(element.root)
-                                .querySelectorAll('kwc-nav-item');
-                        navItems[2].click();
-                        assert.equal(element.activeItemId, items[2].id);
+                            .querySelector('.nav-items')
+                            .querySelectorAll('kwc-nav-item');
                         navItems[1].click();
-                        assert.equal(element.activeItemId, items[1].id);
+                        assert.equal(element.selected, selectedItem2);
                         navItems[0].click();
-                        assert.equal(element.activeItemId, items[0].id);
+                        assert.equal(element.selected, selectedItem1);
                         done();
                     });
+                });
+            });
+
+            suite('active item programatically', () => {
+                let element;
+                setup(() => {
+                    element = fixture('active-item');
+                    element.set('selected', selectedItem1);
+                });
+                test('active item set properly', () => {
+                    assert.equal(element.selected, selectedItem1);
+                });
+                test('changing active item programatically', () => {
+                    element.set('selected', selectedItem2);
+                    assert.equal(element.selected, selectedItem2);
                 });
             });
 
@@ -150,8 +142,7 @@
                 let element;
                 setup(() => {
                     element = fixture('caret');
-                    element.set('navItems', items);
-                    element.set('activeItemId', activeItemId1);
+                    element.set('selected', selectedItem2);
                 })
                 test('has caret', () => {
                     assert.equal(element.hasCaret, true);
