@@ -1,0 +1,247 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-selector/iron-selector.html">
+
+<!--
+`kwc-nav`
+Display navigation links within the view header, to select sub-views.
+
+@demo demo/index.html
+-->
+
+<dom-module id="kwc-nav">
+    <template>
+        <style>
+            :host {
+                display: block;
+            }
+            .nav-items {
+                @apply --layout-horizontal;
+                font-size: 20px;
+                list-style: none;
+                list-style: none;
+                margin: 4px 0 0 0;
+                padding: 0;
+                position: relative;
+            }
+            .caret-container {
+                width: 100%;
+            }
+            #caret {
+                display: none;
+                position: relative;
+            }
+            #caret::after {
+                background-color: #ffffff;
+                border-radius: 3px 0 0 0;
+                content: "";
+                display: block;
+                height: 12px;
+                left: 0;
+                position: absolute;
+                top: -6px;
+                transform: rotate(45deg);
+                width: 12px;
+            }
+            .nav-items.justify-start {
+                @apply --layout-start-justified;
+            }
+            .nav-items.justify-end {
+                @apply --layout-end-justified;
+            }
+            .nav-items.justify-center {
+                @apply --layout-center-center;
+            }
+            .nav-items.justify-space-between {
+                @apply --layout-justified;
+            }
+            .nav-items.justify-space-around {
+                @apply --layout-around-justified;
+            }
+        </style>
+        <div class$="nav-items [[_alignmentClass]]">
+            <slot name="navigation"></slot>
+        </div>
+        <template is="dom-if" if="[[hasCaret]]">
+            <div class="caret-container">
+                <div id="caret"></div>
+            </div>
+        </template>
+    </template>
+
+    <script>
+        Polymer({
+            is: 'kwc-nav',
+            behaviors: [
+                Polymer.IronSelectableBehavior
+            ],
+            properties: {
+                /**
+                 * Flags if navigation should display a caret
+                 * @type {Boolean}
+                 */
+                hasCaret: {
+                    type: Boolean,
+                    value: false
+                },
+                /**
+                 * Defines how to align navigation items accordingly
+                 * @type {String}
+                 */
+                alignment: {
+                    type: String,
+                    value: 'start'
+                },
+                /**
+                 * Override `IronSelectableBehavior`'s property just to make it
+                 * clear the api for changing the `selectedClass` can be used
+                 * @type {String}
+                 */
+                selectedClass: {
+                    type: String,
+                    value: 'iron-selected'
+                },
+                /**
+                 * Computed class to apply alignment on navigation items
+                 * @type {String}
+                 */
+                _alignmentClass: {
+                    type: String,
+                    computed: '_computeAlignmentClass(alignment)'
+                },
+                /**
+                 * Keeps track of the caret's current position
+                 * @type {Number}
+                 */
+                _caretPosition: {
+                    type: Number
+                },
+                /**
+                 * How much the caret should "drift" before reaches the target
+                 * @type {Number}
+                 */
+                _overRun: {
+                    type: Number,
+                    value: 12
+                }
+            },
+            observers: [
+                 '_moveCaret(selected)'
+            ],
+            /**
+             * Calculates the next position the caret should be basen on the
+             * current `activeItemId`.
+             * @param {HTMLElement} targetElement Dom element representing the target item
+             *     on the navigation items.
+             * @return {Number} Absolute horizontal position, base on its
+             *     parent, representing the center of the `targetElement`
+             */
+            _calculateTargetOffset (targetElement) {
+                if (!targetElement) {
+                    return 0;
+                }
+                return targetElement.offsetLeft + (targetElement.offsetWidth/2);
+            },
+            /**
+             * Gets the element from navigation items given the item id.
+             * @param {String} selector CSS selector
+             * @return {HTMLElement} HTML Element that matches selector
+             */
+            _getTargetElement (selector) {
+                return Polymer.dom(this).querySelector(selector);
+            },
+            /**
+             * Animates caret from one position to another.
+             * @param {HTMLElement} caret Caret element.
+             * @param {Number} currentPosition Current caret's position.
+             * @param {Number} targetPosition Position the caret should end the
+             *     animation at.
+             * @return {Object} Animation object.
+             */
+            _animateCaret (caret, currentPosition, targetPosition) {
+                let overRun = targetPosition > currentPosition ? this._overRun : -this._overRun;
+                return caret.animate([
+                        { offset: 0, transform: `translateX(${currentPosition}px)` },
+                        { offset: 0.8, transform: `translateX(${targetPosition+overRun}px)` },
+                        { offset: 1, transform: `translateX(${targetPosition}px)` },
+                    ],
+                    {
+                        duration: 250,
+                        easing: 'cubic-bezier(0.390, 0.575, 0.565, 1.000)',
+                        fill: 'forwards',
+                        iterations: 1
+                    }
+                );
+            },
+            /**
+             * Moves caret to the new target position. Triggered when the
+             * `dom-repeater` changes it's `dom` and when `activeItemId` is
+             * changed.
+             * @return {Boolean} Flags if caret was moved or not.
+             */
+            _moveCaret () {
+                return new Promise((resolve, reject) => {
+                    /** Skip this entirely if caret is disabled */
+                    if (!this.hasCaret) {
+                        return resolve(false);
+                    }
+                    this.debounce('move-caret', () => {
+                        let targetElement = this._getTargetElement(`.${this.selectedClass}`),
+                            targetOffset = this._calculateTargetOffset(targetElement),
+                            currentOffset = this._caretPosition || 0;
+
+                        if (currentOffset === targetOffset) {
+                            return resolve(false);
+                        }
+
+                        let caret = this.$$('#caret'),
+                            animation = this._animateCaret(
+                                caret, currentOffset, targetOffset
+                            );
+                        animation.onfinish = () => {
+                            this.set('_caretPosition', targetOffset)
+                            /**
+                             * The caret starts hidden by default so after animating
+                             * it to the initial position, it has to be displayed
+                             */
+                            if (!caret.style.display) {
+                                caret.style.display = 'block';
+                            }
+                            resolve(true);
+                        };
+                    }, 10);
+                });
+            },
+            /**
+             * Computes the alignment class to be applied to the navigation
+             * based on `alignment` property
+             * @param {String} alignment What is the navigation alignment
+             * @return {String} Which class to append to navigation
+             */
+            _computeAlignmentClass (alignment) {
+                let alignmentClass = 'justify-start';
+                switch (alignment) {
+                    case 'start':
+                        alignmentClass = 'justify-start';
+                        break;
+                    case 'end':
+                        alignmentClass = 'justify-end';
+                        break;
+                    case 'center':
+                        alignmentClass = 'justify-center';
+                        break;
+                    case 'space-between':
+                        alignmentClass = 'justify-space-between';
+                        break;
+                    case 'space-around':
+                        alignmentClass = 'justify-space-around';
+                        break;
+                    case 'space-evenly':
+                        alignmentClass = 'justify-space-evenly';
+                        break;
+                    break;
+                }
+                return alignmentClass;
+            }
+        });
+    </script>
+</dom-module>

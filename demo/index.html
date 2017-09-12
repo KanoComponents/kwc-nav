@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+    <title>kwc-nav demo</title>
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+
+    <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
+    <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+    <link rel="import" href="../../kwc-nav-item/kwc-nav-item.html">
+    <link rel="import" href="../kwc-nav.html">
+
+    <custom-style>
+        <style is="custom-style" include="demo-pages-shared-styles"></style>
+    </custom-style>
+</head>
+<body>
+    <div class="vertical-section-container centered">
+        <h3>Navigation with caret</h3>
+        <demo-snippet>
+            <template>
+                <style media="screen">
+                    .kwc-nav-example { background: #394148; }
+                </style>
+                <kwc-nav class="kwc-nav-example" has-caret selected="item-2" attr-for-selected="name">
+                    <kwc-nav-item slot="navigation" name="item-1" icon-id="challenges">
+                        <a href="#">Item 1</a>
+                    </kwc-nav-item>
+                    <kwc-nav-item slot="navigation" name="item-2" icon-id="medals">
+                        <button>Item 2</button>
+                    </kwc-nav-item>
+                    <kwc-nav-item slot="navigation" name="item-3">Item 3</kwc-nav-item>
+                </kwc-nav>
+            </template>
+        </demo-snippet>
+
+        <h3>Navigation without caret and custom items</h3>
+        <demo-snippet>
+            <template>
+                <style>
+                    .test-selected { font-weight: bold; }
+                    a { padding: 10px; }
+                </style>
+                <kwc-nav selected="0" selected-class="test-selected">
+                    <div slot="navigation">
+                        <a href="#">Item 1</a>
+                    </div>
+                    <div slot="navigation">
+                        <a href="#">Item 2</a>
+                    </div>
+                    <div slot="navigation">
+                        <a href="#">Item 3</a>
+                    </div>
+                </kwc-nav>
+            </template>
+        </demo-snippet>
+
+        <h3>Alignment examples</h3>
+        <demo-snippet>
+            <template>
+                <style media="screen">
+                    .kwc-nav-example { background: #394148; }
+                </style>
+                <h4>Start</h4>
+                <kwc-nav class="kwc-nav-example" alignment="start">
+                    <kwc-nav-item slot="navigation" name="item-1">
+                        Item 1
+                    </kwc-nav-item>
+                    <kwc-nav-item slot="navigation" name="item-2">
+                        Item 2
+                    </kwc-nav-item>
+                </kwc-nav>
+                <h4>Center</h4>
+                <kwc-nav class="kwc-nav-example" alignment="center">
+                    <kwc-nav-item slot="navigation" name="item-1">
+                        Item 1
+                    </kwc-nav-item>
+                    <kwc-nav-item slot="navigation" name="item-2">
+                        Item 2
+                    </kwc-nav-item>
+                </kwc-nav>
+                <h4>End</h4>
+                <kwc-nav class="kwc-nav-example" alignment="end">
+                    <kwc-nav-item slot="navigation" name="item-1">
+                        Item 1
+                    </kwc-nav-item>
+                    <kwc-nav-item slot="navigation" name="item-2">
+                        Item 2
+                    </kwc-nav-item>
+                </kwc-nav>
+                <h4>Space Around</h4>
+                <kwc-nav class="kwc-nav-example" alignment="space-around">
+                    <kwc-nav-item slot="navigation" name="item-1">
+                        Item 1
+                    </kwc-nav-item>
+                    <kwc-nav-item slot="navigation" name="item-2">
+                        Item 2
+                    </kwc-nav-item>
+                </kwc-nav>
+                <h4>Space Between</h4>
+                <kwc-nav class="kwc-nav-example" alignment="space-between">
+                    <kwc-nav-item slot="navigation" name="item-1">
+                        Item 1
+                    </kwc-nav-item>
+                    <kwc-nav-item slot="navigation" name="item-2">
+                        Item 2
+                    </kwc-nav-item>
+                </kwc-nav>
+            </template>
+        </demo-snippet>
+    </div>
+</body>
+</html>

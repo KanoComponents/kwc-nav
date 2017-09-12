@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+        <title>kwc-nav test</title>
+
+        <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+        <script src="../../web-component-tester/browser.js"></script>
+        <link rel="import" href="../../kwc-nav-item/kwc-nav-item.html">
+        <link rel="import" href="../kwc-nav.html">
+    </head>
+    <body>
+        <test-fixture id="basic">
+            <template>
+                <kwc-nav attr-for-selected="name">
+                    <kwc-nav-item slot="navigation" name="item-1">
+                        Item 1
+                    </kwc-nav-item>
+                    <kwc-nav-item slot="navigation" name="item-2">
+                        Item 2
+                    </kwc-nav-item>
+                </kwc-nav>
+            </template>
+        </test-fixture>
+        <test-fixture id="empty">
+            <template>
+                <kwc-nav></kwc-nav>
+            </template>
+        </test-fixture>
+        <test-fixture id="active-item">
+            <template>
+                <kwc-nav attr-for-selected="name">
+                    <kwc-nav-item slot="navigation" name="item-1">
+                        Item 1
+                    </kwc-nav-item>
+                    <kwc-nav-item slot="navigation" name="item-2">
+                        Item 2
+                    </kwc-nav-item>
+                </kwc-nav>
+            </template>
+        </test-fixture>
+        <test-fixture id="active-item-programatically">
+            <template>
+                <kwc-nav attr-for-selected="name">
+                    <kwc-nav-item slot="navigation" name="item-1">
+                        Item 1
+                    </kwc-nav-item>
+                    <kwc-nav-item slot="navigation" name="item-2">
+                        Item 2
+                    </kwc-nav-item>
+                </kwc-nav>
+            </template>
+        </test-fixture>
+        <test-fixture id="caret">
+            <template>
+                <kwc-nav has-caret attr-for-selected="name">
+                    <kwc-nav-item slot="navigation" name="item-1">
+                        Item 1
+                    </kwc-nav-item>
+                    <kwc-nav-item slot="navigation" name="item-2">
+                        Item 2
+                    </kwc-nav-item>
+                </kwc-nav>
+            </template>
+        </test-fixture>
+        <script>
+            let selectedItem1 = 'item-1',
+                selectedItem2 = 'item-2';
+
+            suite('basic', () => {
+                let element;
+                setup(() => {
+                    element = fixture('basic');
+                })
+                test('instantiating the element works', () => {
+                    assert.equal(element.is, 'kwc-nav');
+                });
+                test('no caret by default', () => {
+                    assert.equal(element.hasCaret, false);
+                });
+                test('no `#caret` on DOM when `hasCaret` is false', (done) => {
+                    flush(() => {
+                        let caret = Polymer.dom(element.root)
+                                .querySelector('#caret');
+                        assert.notExists(caret);
+                        done();
+                    });
+                });
+                test('no active item by default', () => {
+                    assert.notExists(element.selected);
+                });
+            });
+
+            suite('empty', () => {
+                let element;
+                setup(function() {
+                    element = fixture('empty');
+                });
+            });
+
+            suite('active item', () => {
+                let element;
+                setup(() => {
+                    element = fixture('active-item');
+                    element.set('selected', selectedItem2);
+                });
+                test('active item set properly', () => {
+                    assert.equal(element.selected, selectedItem2);
+                });
+                test('tapping item changes active item', (done) => {
+                    flush(() => {
+                        let navItems = Polymer.dom(element.root)
+                            .querySelector('.nav-items')
+                            .querySelectorAll('kwc-nav-item');
+                        navItems[1].click();
+                        assert.equal(element.selected, selectedItem2);
+                        navItems[0].click();
+                        assert.equal(element.selected, selectedItem1);
+                        done();
+                    });
+                });
+            });
+
+            suite('active item programatically', () => {
+                let element;
+                setup(() => {
+                    element = fixture('active-item');
+                    element.set('selected', selectedItem1);
+                });
+                test('active item set properly', () => {
+                    assert.equal(element.selected, selectedItem1);
+                });
+                test('changing active item programatically', () => {
+                    element.set('selected', selectedItem2);
+                    assert.equal(element.selected, selectedItem2);
+                });
+            });
+
+            suite('caret', () => {
+                let element;
+                setup(() => {
+                    element = fixture('caret');
+                    element.set('selected', selectedItem2);
+                })
+                test('has caret', () => {
+                    assert.equal(element.hasCaret, true);
+                });
+                test('has caret on DOM', (done) => {
+                    flush(() => {
+                        let caret = Polymer.dom(element.root)
+                            .querySelector('#caret');
+                        assert.exists(caret);
+                        done();
+                    });
+                });
+                /**
+                 * TODO: Find a way to test caret position on DOM to compare
+                 * with the calculated
+                 */
+            });
+        </script>
+    </body>
+</html>
