@@ -11,6 +11,7 @@
     <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
     <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
     <link rel="import" href="../../kwc-nav-item/kwc-nav-item.html">
+    <link rel="import" href="../../kwc-nav-item/kwc-nav-button.html">
     <link rel="import" href="../kwc-nav.html">
 
     <custom-style>
@@ -33,6 +34,21 @@
                         <button>Item 2</button>
                     </kwc-nav-item>
                     <kwc-nav-item slot="navigation" name="item-3">Item 3</kwc-nav-item>
+                </kwc-nav>
+            </template>
+        </demo-snippet>
+
+        <h3>Sub navigation with buttons</h3>
+        <demo-snippet>
+            <template>
+                <kwc-nav selected="item-2" attr-for-selected="name">
+                    <kwc-nav-button slot="navigation" name="item-1" icon-id="challenges">
+                        <a href="#">Item 1</a>
+                    </kwc-nav-button>
+                    <kwc-nav-button slot="navigation" name="item-2" icon-id="medals">
+                        <button>Item 2</button>
+                    </kwc-nav-button>
+                    <kwc-nav-button slot="navigation" name="item-3">Item 3</kwc-nav-button>
                 </kwc-nav>
             </template>
         </demo-snippet>
