@@ -1,4 +1,5 @@
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../polymer/lib/utils/flattened-nodes-observer.html">
 <link rel="import" href="../iron-selector/iron-selectable.html">
 
 <!--
@@ -59,7 +60,7 @@ Display navigation links within the view header, to select sub-views.
             }
         </style>
         <div class$="nav-items [[_alignmentClass]]">
-            <slot name="navigation"></slot>
+            <slot id="nav-slot" name="navigation"></slot>
         </div>
         <template is="dom-if" if="[[hasCaret]]">
             <div class="caret-container">
@@ -127,6 +128,20 @@ Display navigation links within the view header, to select sub-views.
             observers: [
                  '_moveCaret(selected)'
             ],
+            attached () {
+                let slot = Polymer.dom(this.root).querySelector('#nav-slot');
+                /** Observe changes in the slot and recalculate/move caret */
+                this._observer = new Polymer.FlattenedNodesObserver(slot, (info) => {
+                    /**
+                     * For some misterious reason if you don't calculate the
+                     * target element offset, the caret won't work properly.
+                     * TODO: Find out what is going on here...
+                     */
+                    let target = this._getTargetElement(`.${this.selectedClass}`),
+                        targetOffset = this._calculateTargetOffset(target);
+                    this._moveCaret();
+                });
+            },
             /**
              * Calculates the next position the caret should be basen on the
              * current `activeItemId`.
