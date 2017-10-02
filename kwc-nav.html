@@ -19,11 +19,15 @@ Display navigation links within the view header, to select sub-views.
                 font-size: 20px;
                 list-style: none;
                 list-style: none;
-                margin: 4px 0 0 0;
+                margin: 0;
                 padding: 0;
                 position: relative;
             }
+            .nav-items ::slotted(*) {
+                margin-right: 16px;
+            }
             .caret-container {
+                padding-top: 16px;
                 width: 100%;
             }
             #caret {
