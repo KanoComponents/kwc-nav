@@ -83,7 +83,7 @@
                 test('no `#caret` on DOM when `hasCaret` is false', (done) => {
                     flush(() => {
                         let caret = Polymer.dom(element.root)
-                                .querySelector('#caret');
+                                    .querySelector('#caret');
                         assert.notExists(caret);
                         done();
                     });
