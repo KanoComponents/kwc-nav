@@ -1,5 +1,4 @@
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../polymer/lib/utils/flattened-nodes-observer.html">
 <link rel="import" href="../iron-selector/iron-selectable.html">
 
 <!--
@@ -42,6 +41,9 @@ Display navigation links within the view header, to select sub-views.
                 top: -6px;
                 transform: rotate(45deg);
                 width: 12px;
+            }
+            #caret.visible {
+                display: block;
             }
             .nav-items.justify-start {
                 @apply --layout-start-justified;
@@ -131,16 +133,26 @@ Display navigation links within the view header, to select sub-views.
             attached () {
                 let slot = Polymer.dom(this.root).querySelector('#nav-slot');
                 /** Observe changes in the slot and recalculate/move caret */
-                this._observer = new Polymer.FlattenedNodesObserver(slot, (info) => {
-                    /**
-                     * For some misterious reason if you don't calculate the
-                     * target element offset, the caret won't work properly.
-                     * TODO: Find out what is going on here...
-                     */
-                    let target = this._getTargetElement(`.${this.selectedClass}`),
-                        targetOffset = this._calculateTargetOffset(target);
-                    this._moveCaret();
-                });
+                Polymer.dom(slot).observeNodes(this._nodesChanged.bind(this));
+            },
+            _nodesChanged (info) {
+                let target = this._getTargetElement(`.${this.selectedClass}`);
+                /**
+                 * `getBoundingClientRect()` triggers a layout from the browser.
+                 * https://gist.github.com/paulirish/5d52fb081b3570c81e3a
+                 */
+                 if (target) {
+                     target.getBoundingClientRect();
+                 }
+                /**
+                 * Hide the caret so it won't show the animation from the
+                 * previous position to the new one
+                 */
+                let caret = this.$$('#caret');
+                if (caret) {
+                    this.toggleClass('visible', false, caret);
+                }
+                this._moveCaret();
             },
             /**
              * Calculates the next position the caret should be basen on the
@@ -229,9 +241,7 @@ Display navigation links within the view header, to select sub-views.
                             * The caret starts hidden by default so after animating
                             * it to the initial position, it has to be displayed
                             */
-                            if (!caret.style.display) {
-                                caret.style.display = 'block';
-                            }
+                            this.toggleClass('visible', true, caret);
                             resolve(true);
                         });
                     }, 10);
