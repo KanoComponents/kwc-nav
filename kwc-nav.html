@@ -239,6 +239,11 @@ Display navigation links within the view header, to select sub-views.
                                 caret, currentOffset, targetOffset
                             );
 
+                        if (!targetElement) {
+                            this.toggleClass('visible', false, caret);
+                            this.set('_caretPosition', -1);
+                            return resolve(false);
+                        }
                         animation.then(() => {
                             this.set('_caretPosition', targetOffset)
                             /**
