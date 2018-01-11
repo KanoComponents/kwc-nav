@@ -23,7 +23,7 @@ Display navigation links within the view header, to select sub-views.
                 padding: 0;
                 position: relative;
             }
-            .nav-items ::slotted(*) {
+            .nav-items ::slotted(*:not(:last-child)) {
                 margin-right: 16px;
             }
             .caret-container {
@@ -167,10 +167,11 @@ Display navigation links within the view header, to select sub-views.
              *     parent, representing the center of the `targetElement`
              */
             _calculateTargetOffset (targetElement) {
+                let caretWidth = 12;
                 if (!targetElement) {
                     return 0;
                 }
-                return targetElement.offsetLeft + (targetElement.offsetWidth/2);
+                return targetElement.offsetLeft + (targetElement.offsetWidth / 2) - (caretWidth / 2);
             },
             /**
              * Gets the element from navigation items given the item id.
