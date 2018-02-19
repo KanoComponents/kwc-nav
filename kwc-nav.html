@@ -47,6 +47,9 @@ Display navigation links within the view header, to select sub-views.
                 transform: rotate(45deg);
                 width: 12px;
             }
+            .creations #caret::after, .profile-creations #caret::after  {
+                background-color: #e9ebec;
+            }
             #caret.visible {
                 display: block;
             }
@@ -70,7 +73,7 @@ Display navigation links within the view header, to select sub-views.
             <slot id="nav-slot" name="navigation"></slot>
         </div>
         <template is="dom-if" if="[[hasCaret]]">
-            <div class="caret-container">
+            <div class$="caret-container [[_caretClass]]">
                 <div id="caret"></div>
             </div>
         </template>
@@ -117,6 +120,14 @@ Display navigation links within the view header, to select sub-views.
                     computed: '_computeAlignmentClass(alignment)'
                 },
                 /**
+                 * Computed class to apply alignment on navigation items
+                 * @type {String}
+                 */
+                _caretClass: {
+                    type: String,
+                    computed: '_computeCaretClass(selected)'
+                },
+                /**
                  * Keeps track of the caret's current position
                  * @type {Number}
                  */
@@ -133,7 +144,8 @@ Display navigation links within the view header, to select sub-views.
                 }
             },
             observers: [
-                 '_moveCaret(selected)'
+                 '_moveCaret(selected)',
+                 '_computeCaretClass(selected)'
             ],
             attached () {
                 let slot = Polymer.dom(this.root).querySelector('#nav-slot');
@@ -214,6 +226,9 @@ Display navigation links within the view header, to select sub-views.
                         resolve();
                     }
                 });
+            },
+            _computeCaretClass (selected) {
+                return selected;
             },
             /**
              * Moves caret to the new target position. Triggered when the
